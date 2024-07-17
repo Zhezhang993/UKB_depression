@@ -1,0 +1,1287 @@
+data covar;   /*covariates*/
+set aa.labelled_sjeeno;
+
+age=n_21022_0_0;
+sex=n_31_0_0;                                                     /*性别:1-male，0-female*/
+if n_21000_0_0 in (1 1001 1002 1003) then eth=1; else eth=2;    /*种族:1-white，2-others*/
+
+if n_6138_0_0=1 then edu=1;                                      /*教育:1-College or University degree*/                             
+else edu=2;                                                      /*教育:2-others （包括-3未回答）*/
+
+TDI=n_189_0_0;                                                   /*剥夺指数*/
+
+bmi=n_21001_0_0;                                                 
+if bmi^=. and bmi<25 then bmi_gro=1;                           /*BMI:1-normal&underweight, 2-overweight, 3-obesity, 99-miss*/
+else if 25<=bmi<30 then bmi_gro=2;
+else if bmi>=30 then bmi_gro=3;
+else bmi_gro=99;
+
+if n_20116_0_0=0 then smo=0;                                     /*吸烟:0-never, 1-previous, 2-current, 99-miss*/
+else if n_20116_0_0=1 then smo=1;                                
+else if n_20116_0_0=2 then smo=2;
+else smo=99;
+
+
+if n_1558_0_0=1 then dri=1;                                         /*饮酒:1-几乎每天, 2-每周三四次, 3-每周一两次, 4-每月一三次， 5-仅特殊场合， 6-从不喝， -3-miss*/
+else if n_1558_0_0=2 or n_1558_0_0=3 then dri=2;
+else if n_1558_0_0=4 or n_1558_0_0=5 then dri=3;
+else if n_1558_0_0=6 then dri=4;
+else dri=99;
+
+
+/*主观报告-总运动，total physical activity*/
+if n_22036_0_0^=. then act0=n_22036_0_0; else act0=99;              /*锻炼是否达标:0-never, 1-yes, 99-miss; met the 2017 UK Physical activity guidelines of 
+                                                                   150 minutes of walking or moderate activity per week or 75 minutes of vigorous activity.*/
+                                                              
+act_walk=n_22037_0_0;                                                /*步行时长：time-walk */
+act_mode=n_22038_0_0;                                                /*中等运动时长：time-moderate activity */
+act_vigo=n_22039_0_0;                                                /*剧烈运动时长：time-vigorous activity */
+act_all=n_22032_0_0;                                                /*运动时长分类：class-all activity ，0-low, 1-moderate, 2-high*/
+
+
+if 1<= n_1160_0_0 <24 then sleep=n_1160_0_0;                    /*睡眠时长:连续变量*/
+else sleep=.;
+
+
+
+sit1=n_1070_0_0;                                               /*看电视时长: time-watch TV:*/             
+sit2=n_1080_0_0;                                               /*用电脑时长: time-use computer:*/
+sit3=n_1090_0_0;                                               /*开车时长: time-drive:*/
+if sit1= -10 then sit1=0.5;   /*-10代表小于1小时，应该也要用*/
+if sit1= -1 or sit1= -3 then sit1=.;
+if sit2= -10 then sit2=0.5;
+if sit2= -1 or sit2= -3 then sit2=.;
+if sit3= -10 then sit3=0.5;
+if sit3= -1 or sit3= -3 then sit3=.;
+
+if sit1^=. and sit2^=. and sit3^=. then sit=sum(sit1, sit2, sit3);   /*全部静坐时长: time-all sitting:*/
+
+
+/*Diet quality: diet_c_0: 1= Healthy; 0 = Unhealthy*/
+/*Vegetable >=3 servings/day*/
+if n_1289_0_0 in (-1, -3) then vegetable_1_0 = .;
+else if n_1289_0_0 = -10 then vegetable_1_0 = 0.5;
+else vegetable_1_0 = n_1289_0_0;
+if n_1299_0_0 in (-1, -3) then vegetable_2_0 = .;
+else if n_1299_0_0 = -10 then vegetable_2_0 = 0.5;
+else vegetable_2_0 = n_1299_0_0;
+if sum(vegetable_1_0/3, vegetable_2_0/3) >= 3 then diet_vegetable_0 = 1;
+else if vegetable_1_0 = . | vegetable_2_0 = . then diet_vegetable_0 = .;
+else diet_vegetable_0 = 0; 
+/*Fruit >=3 servings/day*/
+if n_1309_0_0 in (-1, -3) then fruit_1_0 = .;
+else if n_1309_0_0 = -10 then fruit_1_0 = 0.5;
+else fruit_1_0 = n_1309_0_0;
+if n_1319_0_0 in (-1, -3) then fruit_2_0 = .;
+else if n_1319_0_0 = -10 then fruit_2_0 = 0.5;
+else fruit_2_0 = n_1319_0_0;
+if sum(fruit_1_0, fruit_2_0/5) >= 3 then diet_fruit_0 = 1;
+else if fruit_1_0 = . | fruit_2_0 = . then diet_fruit_0 = .;
+else diet_fruit_0 = 0;
+/*Wholegrain >=3 servings/day*/
+if n_1438_0_0 in (-1, -3) then n_1438_2_0_0 = .;
+else if n_1438_0_0 = -10 then n_1438_2_0_0 = 0.5;
+else n_1438_2_0_0 = n_1438_0_0;
+if n_1448_0_0 = 3 then wholegrain_1_0 = n_1438_2_0_0/7;
+else if (n_1438_2_0_0 = . and n_1448_0_0 = 3) | n_1448_0_0 in (-1, -3) then wholegrain_1_0 = .;
+else wholegrain_1_0 = 0;
+if n_1458_0_0 in (-1, -3) then n_1458_2_0_0 = .;
+else if n_1458_0_0 = -10 then n_1458_2_0_0 = 0.5;
+else n_1458_2_0_0 = n_1458_0_0;
+if n_1468_0_0 in (1, 3, 4) then wholegrain_2_0 = n_1458_2_0_0/7;
+else if (n_1458_2_0_0 = . and n_1468_0_0 in (1, 3, 4)) | n_1468_0_0 in (-1, -3) then wholegrain_2_0 = .;
+else wholegrain_2_0 = 0;
+if sum(wholegrain_1_0, wholegrain_2_0) >= 3 then diet_wholegrain_0 = 1;
+else if wholegrain_1_0 = . and wholegrain_2_0 = . then diet_wholegrain_0 = .;
+else diet_wholegrain_0 = 0;
+/*Fish >=2 servings/week*/
+if n_1329_0_0 in (-1 -3) then fish_1_0 = .;
+else fish_1_0 = n_1329_0_0;
+if n_1339_0_0 in (-1 -3) then fish_2_0 = .;
+else fish_2_0 = n_1339_0_0;
+if fish_1_0 >= 3 | fish_2_0 >= 3 | (fish_1_0 = 2 and fish_2_0 = 2) then diet_fish_0 = 1;
+else if fish_1_0 = . and fish_2_0 = . then diet_fish_0 = .;
+else diet_fish_0 = 0;
+/*Dairy >=2 servings/day*/
+if n_1408_0_0 = 0 then dairy_1_0 = 0;
+else if n_1408_0_0 = 1 then dairy_1_0 = 0.5/7;
+else if n_1408_0_0 = 2 then dairy_1_0 = 1/7;
+else if n_1408_0_0 = 3 then dairy_1_0 = 3/7;
+else if n_1408_0_0 = 4 then dairy_1_0 = 5.5/7;
+else if n_1408_0_0 = 5 then dairy_1_0 = 1;
+else if n_1408_0_0 in (-1, -3) then dairy_1_0 = .;
+if n_1418_0_0 in (-1, -3) then dairy_2_0 = .;
+else if n_1418_0_0 = 6 then dairy_2_0 = 0;
+else dairy_2_0 = 1;
+if sum(dairy_1_0, dairy_2_0) >= 2 then diet_dairy_0 = 1;
+else if dairy_1_0 = . | dairy_2_0 = . then diet_diary_0 = .;
+else diet_dairy_0 = 0;
+/*Vegetable oil >=2 servings/day*/
+if n_1438_2_0_0/7 >= 2 and n_2654_0_0 in (2, 4, 6, 7, 8) then vegetable_oil_0 = n_1438_2_0_0/7/2;
+else if n_2654_0_0 in (-1, -3) | n_2654_0_0 = . then vegetable_oil_0 = .;
+else vegetable_oil_0 = 0;
+if vegetable_oil_0 >= 2 then diet_vegetable_oil_0 = 1;
+else if vegetable_oil_0 = . then diet_vegetable_oil_0 = .;
+else diet_vegetable_oil_0 = 0;
+/*Refined grain <=2 servings/day*/
+if n_1448_0_0 in (1, 2, 4) then refinedgrain_1_0 = n_1438_2_0_0/7;
+else if n_1448_0_0 in (-1, -3) | (n_1438_2_0_0 = . and n_1448_0_0 in (1, 2, 4)) then refinedgrain_1_0 = .;
+else refinedgrain_1_0 = 0;
+if n_1468_0_0 in (2, 5) then refinedgrain_2_0 = n_1458_2_0_0/7;
+else if n_1468_0_0 in (-1, -3) | (n_1468_0_0 in (2, 5) and n_1458_2_0_0 = . ) then refinedgrain_2_0 = .;
+else refinedgrain_2_0 = 0;
+if sum(refinedgrain_1_0, refinedgrain_2_0) > 2 then diet_refinedgrain_0 = 0;
+else if sum(refinedgrain_1_0, refinedgrain_2_0) <= 2 then diet_refinedgrain_0 = 1;
+else diet_refinedgrain_0 = 0;
+/*Processed meat <=1 servings/week*/
+if n_1349_0_0 in (-1 -3) then pro_meat_0 = .;
+else pro_meat_0 = n_1349_0_0;
+if pro_meat_0 in (0, 1, 2) then diet_pro_meat_0 = 1;
+else if pro_meat_0 = . then diet_pro_meat_0 = .;
+else diet_pro_meat_0 = 0;
+/*Unprocessed meat <=2 servings/week*/
+if n_1359_0_0 in (-1 -3) then unpro_meat_1_0 = .;
+else unpro_meat_1_0 = n_1359_0_0;
+if n_1369_0_0 in (-1 -3) then unpro_meat_2_0 = .;
+else unpro_meat_2_0 = n_1369_0_0;
+if n_1379_0_0 in (-1 -3) then unpro_meat_3_0 =.;
+else unpro_meat_3_0 = n_1379_0_0;
+if n_1389_0_0 in (-1 -3) then unpro_meat_4_0 =.;
+else unpro_meat_4_0 = n_1389_0_0;
+array um(4) unpro_meat_1_0 unpro_meat_2_0 unpro_meat_3_0 unpro_meat_4_0;
+do i=1 to 4;
+if um(i)=0 then um(i)=0;
+if um(i)=1 then um(i)=0.5;
+if um(i)=2 then um(i)=1;
+if um(i)=3 then um(i)=3;
+if um(i)=4 then um(i)=5.5;
+if um(i)=5 then um(i)=7;
+end;
+if sum(unpro_meat_1_0, unpro_meat_2_0, unpro_meat_3_0, unpro_meat_4_0) > 2 then diet_unpro_meat_0 = 0;
+else if sum(unpro_meat_1_0, unpro_meat_2_0, unpro_meat_3_0, unpro_meat_4_0) <= 2 then diet_unpro_meat_0 = 1;
+else diet_unpro_meat_0 = .;
+/*Sugar-sweetened beverages = 0  servings/week*/
+if n_6144_0_0 = -3 then sugar_0 = .;
+else sugar_0 = n_6144_0_0;
+if sugar_0 = 4 then diet_sugar_0 = 1;
+else if sugar_0 = . then diet_sugar_0 = .;
+else diet_sugar_0 = 0;
+/*Healthy diet score*/
+if sum(diet_fruit_0, diet_vegetable_0, diet_wholegrain_0, diet_fish_0, diet_dairy_0, diet_vegetable_oil_0, diet_refinedgrain_0, diet_pro_meat_0, diet_unpro_meat_0, diet_sugar_0) >= 5 then diet = 1;
+else if (diet_fruit_0 + diet_vegetable_0 + diet_wholegrain_0 + diet_fish_0 + diet_dairy_0 + diet_vegetable_oil_0 + diet_refinedgrain_0 + diet_pro_meat_0 + diet_unpro_meat_0 + diet_sugar_0) < 5 then diet = 0;
+else diet =999;
+
+array dis(29) n_20002_0_0-n_20002_0_28;                             /*基线疾病状态个数*/
+do i=1 to 29;
+if dis(29)=99999 then dis(29)=.;end;
+ 
+num_dis=nmiss(n_20002_0_0,n_20002_0_1,n_20002_0_2,n_20002_0_3,n_20002_0_4,n_20002_0_5,
+              n_20002_0_6,n_20002_0_7,n_20002_0_8,n_20002_0_9,n_20002_0_10,n_20002_0_11,
+              n_20002_0_12,n_20002_0_13,n_20002_0_14,n_20002_0_15,n_20002_0_16,n_20002_0_17,
+              n_20002_0_18,n_20002_0_19,n_20002_0_20,n_20002_0_21,n_20002_0_22,n_20002_0_23,
+              n_20002_0_24,n_20002_0_25,n_20002_0_26,n_20002_0_27,n_20002_0_28);
+
+base_dise=29-num_dis;
+if base_dise>2 then base_dise=2;
+
+                                                                   /*基线 抑郁情况汇总*/
+array drug(48) n_20003_0_0-n_20003_0_47;
+do i=1 to 48;                                                     /*自报抗抑郁药*/
+if drug(i) in (1140909806,1140910820,1140916282,1140917460,1140921600,
+1140882236,1140882244,1140882312,1141151946,1141151978,1141151982,
+1141152732,1141152736,1141180212,1141190158,1141200564,1141200570,
+1141201834,1140867624,1140867640,1140867668,1140867690,1140867726,
+1140867756,1140867758,1140867784,1140867812,1140867818,1140867820,
+1140867850,1140867852,1140867856,1140867860,1140867876,1140867878,
+1140867884,1140867888,1140867914,1140867920,1140867922,1140867934,
+1140867938,1140867944,1140867948,1140879540,1140879544,1140879556,
+1140879616,1140879620,1140879628,1140879630,1140879634)
+then anti_dep=1;
+end;
+if anti_dep^=1 then anti_dep=0;
+
+array disease(29) n_20002_0_0-n_20002_0_28; 
+do i=1 to 29;                                                    /*自报抑郁症*/
+if disease(i) = 1286
+then self_dep=1; 
+end; 
+if self_dep^=1 then self_dep=0;
+
+
+
+keep  n_eid  age sex eth edu TDI bmi_gro smo dri diet num_dis base_dise act0 act_walk act_mode act_vigo act_all
+sleep sit1 sit2 sit3 sit anti_dep self_dep 
+n_54_0_0  s_191_0_0  s_53_0_0;         /*后两个为失访和进入队列时间*/
+
+format s_191_0_0 s_53_0_0  date9.;
+proc print data=covar (firstobs=1 obs=50);
+run;
+
+proc freq data=covar; 
+table stype  sless snore sdoze; /*table后接变量，对sex和age分别做描述*/
+run;
+
+
+libname bb 'D:\UKB_main_dataset\UKB_DATA_2';  /*建立临时数据库ee，链接到本地文件夹，UKB_liu中有基础信息*/
+data out;   /*covariates*/
+set bb.labelled_srxlso;
+                                                                /*抑郁是否存在及时间*/
+if s_130894_0_0^=. or s_130896_0_0^=. then do dep=1;
+dep_date=min(s_130894_0_0, s_130896_0_0); end;
+else do dep=0; end;
+
+format dep_date  date9.;
+keep n_eid dep dep_date  ;
+proc print data=out (firstobs=1 obs=50);
+run;
+
+
+libname cc 'D:\UKB_main_dataset\UKB data_20220705';  /*建立临时数据库ee，链接到本地文件夹，UKB_liu中有基础信息*/
+data dea;   /*covariates*/
+set cc.labelled_exucrt;
+                                                                /*死亡情况及时间*/
+if n_40023_0_0^=. then do dea=1; dea_date=s_40000_0_0; end;         
+else do dea=0; end;
+
+format dea_date date9.;
+keep n_eid dea dea_date;
+proc print data=dea (firstobs=1 obs=50);
+run;
+
+
+data sum;
+merge covar out dea;
+by n_eid;
+proc print data=sum (firstobs=200 obs=250);
+run;
+
+
+
+
+
+data sum1; 
+set sum;
+
+array outcome(2) dep dea;
+array date(2) dep_date dea_date;
+
+do i=1 to 2;
+if outcome(i)=0 and n_54_0_0 in (11021,11011,11008,11020,11018,             /*最新版队列结束时间 England Apr/1/2022; Scotland Mar/1/2022; Wales Oct/7/2021*/
+                    11010,11016,11001,11017,11009,11013,
+                    11002,11007,11014,10003,11006,11026,
+                    11027,11028,11024,11025,11012)
+					then date(i)=mdy(4,1,2022);
+if outcome(i)=0 and n_54_0_0 in (11005,11004) then date(i)=mdy(3,1,2022);           /*队列结束时间*/
+if outcome(i)=0 and n_54_0_0 in (11003,11022,11023) then date(i)=mdy(10,7,2021);
+end;
+
+
+if dep=0 and dea=1 and dea_date<dep_date then dep_date=dea_date;                      /*死亡时间*/
+
+do i=1 to 2;
+if outcome(i)=0 and s_191_0_0^=. and s_191_0_0<date(i) then date(i)=s_191_0_0; end;    /*失访时间*/
+
+
+/*下面一段为修改失访后发生结局的观测值，即结局时间在失访后的*/
+
+if s_191_0_0^=. and dep_date> s_191_0_0 then do dep=0 ;dep_date=s_191_0_0;end;
+if s_191_0_0^=. and dea_date> s_191_0_0 then do dea=0 ;dea_date=s_191_0_0;end;
+
+
+                                                     /*比较上述结局早晚，计算随访时间*/
+t_dep=(dep_date-s_53_0_0)/365.25;
+t_dea=(dea_date-s_53_0_0)/365.25;
+
+
+if anti_dep=1 or self_dep=1 or t_dep<0 then base_dep=1;        /*基线抑郁情况*/
+else base_dep=0;
+
+keep  n_eid  age sex eth edu TDI bmi_gro smo dri diet base_dise act0 act_walk act_mode act_vigo act_all 
+sleep sit dep dep_date dea dea_date t_dep t_dea base_dep; 
+
+proc print data=sum1 (firstobs=1 obs=50);
+run;
+
+
+data sum2;
+set sum1;
+
+if sleep=. then delete;
+
+if act_all=. or act0=99  or act_walk=. or act_mode=. or act_vigo=. then delete;
+
+if t_dep=0 or base_dep=1 then delete ;
+
+if t_dea=0 or dea=. then delete;
+
+if age=. or sex=. or eth=. or tdi=. or  edu=.  then delete;
+if bmi_gro=99 or bmi_gro=. then delete;
+if smo=99 or smo=. then delete;
+if dri=99 or dri=. then delete;
+if diet = 999 then delete;
+if base_dise=. then delete;
+if sit=. then delete;
+
+rename bmi_gro=bmi;
+drop   base_dep;
+proc print data=sum2 (firstobs=1 obs=50);
+run;
+
+
+data sum3;
+set sum2;
+
+if act_walk<330 then r_act_walk=1;        /*步行分为四分位*/
+if 330<=act_walk<693 then r_act_walk=2;
+if 693<=act_walk<1386 then r_act_walk=3;
+if act_walk>=1386 then r_act_walk=4;
+
+if act_mode<120 then r_act_mode=1;       /*中等强度分为四分位*/
+if 120<=act_mode<480 then r_act_mode=2;
+if 480<=act_mode<1200 then r_act_mode=3;
+if act_mode>=1200 then r_act_mode=4;
+
+if act_vigo=0 then r_act_vigo=1;           /*剧烈运动三分类，其中0一组，有数值的以中位数分界*/
+if 0<act_vigo<=720 then r_act_vigo=2;
+if act_vigo>720 then r_act_vigo=3;
+
+
+if sleep<6 then r_sleep=1;                    /*睡眠时长3分类*/  
+if sleep=6 or sleep=7 or sleep=8 then r_sleep=2;
+if sleep>8 then r_sleep=3;
+
+
+if 0<=sit<=3 then r_sit=1;                    /*久坐时间四分位*/
+if 3<sit<=4.5 then r_sit=2;
+if 4.5<sit<=6 then r_sit=3;
+if sit>6 then r_sit=4;
+
+proc print data=sum3 (firstobs=1 obs=50);
+run;
+
+data zz; /*找出phy3去掉0后的中位数，以此为二三分类界限*/
+set sum3;
+if act_vigo^=0;
+run;
+proc univariate data=sum2 cibasic; 
+var act_walk act_mode act_vigo;
+run;
+
+proc freq data=sum3; 
+table stype r_sleep sless snore sdoze; /*table后接变量，对sex和age分别做描述*/
+run;
+
+
+data sum4;
+set sum3;
+
+if r_sleep=1 and r_act_walk=1 then r_walk=1;  /*步行：四分位*/
+if r_sleep=1 and r_act_walk=2 then r_walk=2;
+if r_sleep=1 and r_act_walk=3 then r_walk=3;
+if r_sleep=1 and r_act_walk=4 then r_walk=4;
+if r_sleep=2 and r_act_walk=1 then r_walk=5;  
+if r_sleep=2 and r_act_walk=2 then r_walk=6;
+if r_sleep=2 and r_act_walk=3 then r_walk=7;
+if r_sleep=2 and r_act_walk=4 then r_walk=8;
+if r_sleep=3 and r_act_walk=1 then r_walk=9;  
+if r_sleep=3 and r_act_walk=2 then r_walk=10;
+if r_sleep=3 and r_act_walk=3 then r_walk=11;
+if r_sleep=3 and r_act_walk=4 then r_walk=12;
+
+
+if r_sleep=1 and r_act_mode=1 then r_mode=1;  /*中等运动：四分位*/
+if r_sleep=1 and r_act_mode=2 then r_mode=2;
+if r_sleep=1 and r_act_mode=3 then r_mode=3;
+if r_sleep=1 and r_act_mode=4 then r_mode=4;
+if r_sleep=2 and r_act_mode=1 then r_mode=5;  
+if r_sleep=2 and r_act_mode=2 then r_mode=6;
+if r_sleep=2 and r_act_mode=3 then r_mode=7;
+if r_sleep=2 and r_act_mode=4 then r_mode=8;
+if r_sleep=3 and r_act_mode=1 then r_mode=9;  
+if r_sleep=3 and r_act_mode=2 then r_mode=10;
+if r_sleep=3 and r_act_mode=3 then r_mode=11;
+if r_sleep=3 and r_act_mode=4 then r_mode=12;
+
+if r_sleep=1 and r_act_vigo=1 then r_vigo=1;  /*剧烈运动：三分类*/
+if r_sleep=1 and r_act_vigo=2 then r_vigo=2;
+if r_sleep=1 and r_act_vigo=3 then r_vigo=3;
+if r_sleep=2 and r_act_vigo=1 then r_vigo=4;  
+if r_sleep=2 and r_act_vigo=2 then r_vigo=5;
+if r_sleep=2 and r_act_vigo=3 then r_vigo=6;
+if r_sleep=3 and r_act_vigo=1 then r_vigo=7;  
+if r_sleep=3 and r_act_vigo=2 then r_vigo=8;
+if r_sleep=3 and r_act_vigo=3 then r_vigo=9;
+
+
+if r_sleep=1 and act0=0 then r_0=1;    /*是否达标：否、是*/
+if r_sleep=1 and act0=1 then r_0=2;
+if r_sleep=2 and act0=0 then r_0=3;
+if r_sleep=2 and act0=1 then r_0=4;
+if r_sleep=3 and act0=0 then r_0=5;
+if r_sleep=3 and act0=1 then r_0=6;
+
+if r_sleep=1 and act_all=0 then r_all=1;    /*综合运动：低、中、高*/
+if r_sleep=1 and act_all=1 then r_all=2;
+if r_sleep=1 and act_all=2 then r_all=3;
+if r_sleep=2 and act_all=0 then r_all=4;    
+if r_sleep=2 and act_all=1 then r_all=5;
+if r_sleep=2 and act_all=2 then r_all=6;
+if r_sleep=3 and act_all=0 then r_all=7;    
+if r_sleep=3 and act_all=1 then r_all=8;
+if r_sleep=3 and act_all=2 then r_all=9;
+
+proc print data=sum4 (firstobs=1 obs=50);
+run;
+
+
+/*主分析一：基线特征*/
+
+data sum4_g1;
+set sum4;
+if r_sleep=1;
+run;
+data sum4_g2;
+set sum4;
+if r_sleep=2;
+run;
+data sum4_g3;
+set sum4;
+if r_sleep=3;
+run;
+
+proc univariate data=sum4 cibasic; 
+var age tdi act_walk act_mode act_vigo sleep t_dep ;
+run;
+proc freq data=sum4; 
+table sex eth edu smo dri diet r_sit  act_all r_act_walk r_act_mode r_act_vigo act0 bmi base_dise ; /*table后接变量，对sex和age分别做描述*/
+run;
+
+
+/*画分布直方图*/
+proc univariate data=sum_01 noprint;
+histogram sleep / normal (mu=est sigma=est color=blue w=1)   /*est为正态分布相关数值*/ 
+barlabel=percent midpoints = 1 to 20 by 1;                  /*每组直方图显示百分比数据，横坐标范围1-20，组距1*/
+run;
+
+/*方差分析比较组间差异*/
+proc glm data=sum4new; /*比如分析不同组的自变量是否有差异，但自变量在各组观测个数不同，要用glm语句*/
+class r_sleep; /*要提前明确分组*/
+model r_act_walk=r_sleep; /*前边为自变量，后边为分的组别*/
+/*means r_sq/snk; /*加上means语句及snk，进行两两分组t检验*/
+means r_sleep/hovtest = levene; /* hovtest = bf; /*本语句即进行方差齐性检验，使用levene和bf两种检验方法，方差不齐时，要用npar1way语句*/
+run;
+
+
+
+proc phreg data=sum4;  /*Schoenfeld残差检验比例风险假设*/
+   
+    model t_dep*dep(0) =r_sleep act_all age sex eth edu tdi bmi smo dri diet base_dise r_sit / ties=efron;
+    assess var=(r_sleep act_all) / resample;
+run;
+
+
+/*主分析二：多因素COX*/
+
+
+/*睡眠与抑郁*/
+proc phreg data=sum4;    /*睡眠分类变量，model 1*/
+class r_sleep(ref='2') ;
+model t_dep *dep(0)=r_sleep age sex eth edu tdi  /risklimits;
+run;
+proc phreg data=sum4;    /*睡眠分类变量，model 2*/
+class r_sleep(ref='2') ;
+model t_dep *dep(0)=r_sleep age sex eth edu tdi bmi smo dri diet base_dise act_all r_sit  /risklimits;
+run;
+
+
+/*运动与抑郁*/
+proc phreg data=sum4;    /*运动分类变量-步行*/
+class r_act_walk(ref='1') ;
+model t_dep *dep(0)=r_act_walk age sex eth edu tdi/risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量*/
+class r_act_walk(ref='1') ;
+model t_dep *dep(0)=r_act_walk age sex eth edu tdi bmi smo dri diet base_dise r_sleep r_sit r_act_vigo r_act_mode /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量-中等运动*/
+class r_act_mode(ref='1') ;
+model t_dep *dep(0)=r_act_mode age sex eth edu tdi/risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量*/
+class r_act_mode(ref='1') ;
+model t_dep *dep(0)=r_act_mode age sex eth edu tdi bmi smo dri diet base_dise r_sleep r_sit r_act_vigo r_act_walk /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量-剧烈运动*/
+class r_act_vigo(ref='1') ;
+model t_dep *dep(0)=r_act_vigo age sex eth edu tdi /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量*/
+class r_act_vigo(ref='1') ;
+model t_dep *dep(0)=r_act_vigo age sex eth edu tdi bmi smo dri diet base_dise r_sleep r_sit r_act_walk r_act_mode /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量-综合运动*/
+class act_all(ref='0') ;
+model t_dep *dep(0)=act_all age sex eth edu tdi  /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量*/
+class act_all(ref='0') ;
+model t_dep *dep(0)=act_all age sex eth edu tdi bmi smo dri diet base_dise r_sleep r_sit  /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量-达标运动*/
+class act0(ref='0') ;
+model t_dep *dep(0)=act0 age sex eth edu tdi  /risklimits;
+run;
+proc phreg data=sum4;    /*运动分类变量*/
+class act0(ref='0') ;
+model t_dep *dep(0)=act0 age sex eth edu tdi bmi smo dri diet base_dise r_sleep r_sit  /risklimits;
+run;
+
+
+proc freq data=sum4; 
+table dep*r_act_mode ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4 sum;  /*分类求人年*/
+   class act0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+/*主分析三：睡眠分层COX*/
+
+
+proc phreg data=sum4_g1;   /*综合运动*/
+class act_all(ref='0') ;
+model t_dep *dep(0)= act_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sum4_g2;    
+class act_all(ref='0') ;
+model t_dep *dep(0)= act_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sum4_g3;    
+class act_all(ref='0') ;
+model t_dep *dep(0)= act_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_g1; 
+table dep*act_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g2; 
+table dep*act_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g3; 
+table dep*act_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_g1 sum;  /*分类求人年*/
+   class act_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g2 sum;  /*分类求人年*/
+   class act_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g3 sum;  /*分类求人年*/
+   class act_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+proc phreg data=sum4_g1;    /*步行运动*/
+class r_act_walk(ref='1') ;
+model t_dep *dep(0)= r_act_walk age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_vigo r_act_mode /risklimits;
+run;
+proc phreg data=sum4_g2;   
+class r_act_walk(ref='1') ;
+model t_dep *dep(0)= r_act_walk age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_vigo r_act_mode /risklimits;
+run;
+proc phreg data=sum4_g3;    
+class r_act_walk(ref='1') ;
+model t_dep *dep(0)= r_act_walk age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_vigo r_act_mode /risklimits;
+run;
+proc freq data=sum4_g1; 
+table dep*r_act_walk ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g2; 
+table dep*r_act_walk ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g3; 
+table dep*r_act_walk ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_g1 sum;  /*分类求人年*/
+   class r_act_walk;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g2 sum;  /*分类求人年*/
+   class r_act_walk;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g3 sum;  /*分类求人年*/
+   class r_act_walk;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+proc phreg data=sum4_g1;    /*剧烈运动*/
+class r_act_vigo(ref='1') ;
+model t_dep *dep(0)= r_act_vigo age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_walk r_act_mode /risklimits;
+run;
+proc phreg data=sum4_g2;   
+class r_act_vigo(ref='1') ;
+model t_dep *dep(0)= r_act_vigo age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_walk r_act_mode /risklimits;
+run;
+proc phreg data=sum4_g3;    
+class r_act_vigo(ref='1') ;
+model t_dep *dep(0)= r_act_vigo age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_walk r_act_mode /risklimits;
+run;
+proc freq data=sum4_g1; 
+table dep*r_act_vigo ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g2; 
+table dep*r_act_vigo ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_g3; 
+table dep*r_act_vigo ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_g1 sum;  /*分类求人年*/
+   class r_act_vigo;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g2 sum;  /*分类求人年*/
+   class r_act_vigo;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_g3 sum;  /*分类求人年*/
+   class r_act_vigo;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+
+
+/*主分析四：联合分析看抵消结果*/
+
+proc phreg data=sum4;    /*步行*/
+class r_walk(ref='5') ;
+model t_dep *dep(0)=r_walk age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_mode r_act_vigo /risklimits;
+run;
+proc phreg data=sum4;   /*中等运动*/
+class r_mode(ref='5') ;
+model t_dep *dep(0)=r_mode age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_walk r_act_vigo/risklimits;
+run;
+proc phreg data=sum4;   /*剧烈运动*/
+class r_vigo(ref='4') ;
+model t_dep *dep(0)=r_vigo age sex eth edu tdi bmi smo dri diet base_dise r_sit r_act_mode r_act_walk/risklimits;
+run;
+proc phreg data=sum4;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sum4;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+proc freq data=sum4; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4 sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+
+/*主分析五：年龄分层联合分析*/
+
+data sum4_age1;
+set sum4;
+if age<60;
+run;
+data sum4_age2;
+set sum4;
+if age>=60;
+run;
+
+
+
+proc phreg data=sum4_age1;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_age1; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_age1 sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc phreg data=sum4_age2;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_age2; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_age2 sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+data zz;
+set sum4;
+if age>= 60 then r_age=2;else r_age=1;
+run;
+proc phreg data=zz;    /*相乘交互,计算p-interaction*/
+class r_all r_age/param = ref ref = first;
+model t_dep *dep(0)= r_all r_age r_all*r_age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+
+
+proc phreg data=sum4_age1;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_age1; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_age1 sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+proc phreg data=sum4_age2;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_age2; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_age2 sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+proc phreg data=zz;    /*相乘交互,计算p-interaction*/
+class r_0 r_age/param = ref ref = first;
+model t_dep *dep(0)= r_0 r_age r_0*r_age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+
+
+
+/*主分析六：性别分层联合分析*/
+
+data sum4_male;
+set sum4;
+if sex=1;
+run;
+data sum4_female;
+set sum4;
+if sex=0;
+run;
+
+
+proc phreg data=sum4_male;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_male; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_male sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc phreg data=sum4_female;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_female; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_female sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+proc phreg data=sum4;    /*相乘交互,计算p-interaction*/
+class r_all sex/param = ref ref = first;
+model t_dep *dep(0)= r_all sex r_all*sex age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+
+
+proc phreg data=sum4_male;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_male; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_male sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+proc phreg data=sum4_female;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_female; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_female sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+proc phreg data=sum4;    /*相乘交互*/
+class r_0 sex/param = ref ref = first;
+model t_dep *dep(0)= r_0 sex r_0*sex age eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+
+
+
+/*1.敏感性分析--剔除2年内新发病例*/
+
+data sum4_s1;
+set sum4;
+if dep=1 and t_dep<=2 then delete;
+run;
+
+proc phreg data=sum4_s1;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sum4_s1;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+proc freq data=sum4_s1; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_s1; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_s1 sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_s1 sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+/*2.敏感性分析--截断日期定为2019.12.31，新冠疫情前*/
+
+data aaa;                /*因为此方案需要重新确定各时间节点，所以重新提取失访时间变量和进入队列时间变量*/
+set sum;
+keep n_eid s_191_0_0 s_53_0_0;
+run;
+data bbb;
+merge sum1 aaa;
+by n_eid;
+if age=. then delete;
+run;
+
+data ccc;
+set bbb;
+
+if dep=1 and dep_date > mdy(12,31,2019) then do dep=0;dep_date = mdy(12,31,2019); end;  /*修改出现结局节点*/
+if dea=1 and dea_date > mdy(12,31,2019) then do dea=0;dea_date = mdy(12,31,2019); end;  /*修改死亡节点*/
+
+if dep=0 then dep_date=mdy(12,31,2019);                                                  /*修改队列结束节点*/
+if dep=0 and dea=1 and dea_date<dep_date then dep_date=dea_date; 
+
+if s_191_0_0 > mdy(12,31,2019) then  s_191_0_0=.;                                        /*修改失访节点*/
+if dep=0 and s_191_0_0^=. and s_191_0_0 < mdy(12,31,2019) then dep_date=s_191_0_0;
+if dea=0 and s_191_0_0^=. and s_191_0_0 < mdy(12,31,2019) then dea_date=s_191_0_0;
+
+/*下面一段为修改失访后发生结局的观测值，即结局时间在失访后的*/
+if s_191_0_0^=. and dep_date> s_191_0_0 then do dep=0 ;dep_date=s_191_0_0; end;
+if s_191_0_0^=. and dea_date> s_191_0_0 then do dea=0 ;dea_date=s_191_0_0; end;
+
+                                                    /*比较上述结局早晚，计算随访时间*/
+t_dep=(dep_date-s_53_0_0)/365.25;
+t_dea=(dea_date-s_53_0_0)/365.25;
+run;
+
+data sum4_s2;
+set ccc;
+
+if sleep=. then delete;
+
+if act_all=. or act0=99  or act_walk=. or act_mode=. or act_vigo=. then delete;
+
+if base_dep=1 then delete ;
+
+if t_dep=0 or t_dea=0 then delete;
+if dea=. then delete;
+
+if age=. or sex=. or eth=. or tdi=. or  edu=.  then delete;
+if bmi_gro=99 or bmi_gro=. then delete;
+if smo=99 or smo=. then delete;
+if dri=99 or dri=. then delete;
+if diet = 999 then delete;
+if base_dise=. then delete;
+if sit=. then delete;
+
+if act_walk<330 then r_act_walk=1;        /*步行分为四分位*/
+if 330<=act_walk<693 then r_act_walk=2;
+if 693<=act_walk<1386 then r_act_walk=3;
+if act_walk>=1386 then r_act_walk=4;
+
+if act_mode<120 then r_act_mode=1;       /*中等强度分为四分位*/
+if 120<=act_mode<480 then r_act_mode=2;
+if 480<=act_mode<1200 then r_act_mode=3;
+if act_mode>=1200 then r_act_mode=4;
+
+if act_vigo=0 then r_act_vigo=1;           /*剧烈运动三分类，其中0一组，有数值的以中位数分界*/
+if 0<act_vigo<=720 then r_act_vigo=2;
+if act_vigo>720 then r_act_vigo=3;
+
+
+if sleep<6 then r_sleep=1;                    /*睡眠时长3分类*/  
+if sleep=6 or sleep=7 or sleep=8 then r_sleep=2;
+if sleep>8 then r_sleep=3;
+
+
+if 0<=sit<=3 then r_sit=1;                    /*久坐时间四分位*/
+if 3<sit<=4.5 then r_sit=2;
+if 4.5<sit<=6 then r_sit=3;
+if sit>6 then r_sit=4;
+
+if r_sleep=1 and r_act_walk=1 then r_walk=1;  /*步行：四分位*/
+if r_sleep=1 and r_act_walk=2 then r_walk=2;
+if r_sleep=1 and r_act_walk=3 then r_walk=3;
+if r_sleep=1 and r_act_walk=4 then r_walk=4;
+if r_sleep=2 and r_act_walk=1 then r_walk=5;  
+if r_sleep=2 and r_act_walk=2 then r_walk=6;
+if r_sleep=2 and r_act_walk=3 then r_walk=7;
+if r_sleep=2 and r_act_walk=4 then r_walk=8;
+if r_sleep=3 and r_act_walk=1 then r_walk=9;  
+if r_sleep=3 and r_act_walk=2 then r_walk=10;
+if r_sleep=3 and r_act_walk=3 then r_walk=11;
+if r_sleep=3 and r_act_walk=4 then r_walk=12;
+
+
+if r_sleep=1 and r_act_mode=1 then r_mode=1;  /*中等运动：四分位*/
+if r_sleep=1 and r_act_mode=2 then r_mode=2;
+if r_sleep=1 and r_act_mode=3 then r_mode=3;
+if r_sleep=1 and r_act_mode=4 then r_mode=4;
+if r_sleep=2 and r_act_mode=1 then r_mode=5;  
+if r_sleep=2 and r_act_mode=2 then r_mode=6;
+if r_sleep=2 and r_act_mode=3 then r_mode=7;
+if r_sleep=2 and r_act_mode=4 then r_mode=8;
+if r_sleep=3 and r_act_mode=1 then r_mode=9;  
+if r_sleep=3 and r_act_mode=2 then r_mode=10;
+if r_sleep=3 and r_act_mode=3 then r_mode=11;
+if r_sleep=3 and r_act_mode=4 then r_mode=12;
+
+if r_sleep=1 and r_act_vigo=1 then r_vigo=1;  /*剧烈运动：三分类*/
+if r_sleep=1 and r_act_vigo=2 then r_vigo=2;
+if r_sleep=1 and r_act_vigo=3 then r_vigo=3;
+if r_sleep=2 and r_act_vigo=1 then r_vigo=4;  
+if r_sleep=2 and r_act_vigo=2 then r_vigo=5;
+if r_sleep=2 and r_act_vigo=3 then r_vigo=6;
+if r_sleep=3 and r_act_vigo=1 then r_vigo=7;  
+if r_sleep=3 and r_act_vigo=2 then r_vigo=8;
+if r_sleep=3 and r_act_vigo=3 then r_vigo=9;
+
+
+if r_sleep=1 and act0=0 then r_0=1;    /*是否达标：否、是*/
+if r_sleep=1 and act0=1 then r_0=2;
+if r_sleep=2 and act0=0 then r_0=3;
+if r_sleep=2 and act0=1 then r_0=4;
+if r_sleep=3 and act0=0 then r_0=5;
+if r_sleep=3 and act0=1 then r_0=6;
+
+if r_sleep=1 and act_all=0 then r_all=1;    /*综合运动：低、中、高*/
+if r_sleep=1 and act_all=1 then r_all=2;
+if r_sleep=1 and act_all=2 then r_all=3;
+if r_sleep=2 and act_all=0 then r_all=4;    
+if r_sleep=2 and act_all=1 then r_all=5;
+if r_sleep=2 and act_all=2 then r_all=6;
+if r_sleep=3 and act_all=0 then r_all=7;    
+if r_sleep=3 and act_all=1 then r_all=8;
+if r_sleep=3 and act_all=2 then r_all=9;
+
+rename bmi_gro=bmi;
+drop   base_dep;
+run;
+
+
+proc phreg data=sum4_s2;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sum4_s2;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc freq data=sum4_s2; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_s2; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_s2 sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_s2 sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+/*3.敏感性分析--缺失协变量插补*/
+
+/*多重插补*/
+data sleep2;
+set sleep;
+
+if bmi=99 then bmi=.;
+if smo=99 then smo=.;
+if dri=99 then dri=. ;
+if diet = 999 then diet = .;
+run;
+
+proc freq data=sleep2;
+table bmi smo dri r_sit;
+run; 
+proc univariate data=sleep2;
+var tdi;
+run;
+
+proc mi data=sleep2 out=nomissing nimpute=5 round=1 1 1 1 0.01 minimum=1 0 1 1 -6.25826 maximum=3 2 2 4 11.0013;
+var bmi smo dri r_sit tdi;
+run;
+
+proc univariate data=nomissing noprint;
+class n_eid;
+var bmi smo dri r_sit tdi;
+output out=nm mean=bmi smo dri r_sit tdi;
+run;
+
+data sleep_nomissing;
+update sleep2 nm;
+by n_eid;
+bmi=round(bmi,1);
+smo=round(smo, 1);
+dri=round(dri,1);
+r_sit=round(r_sit,1);
+tdi=round(tdi,0.00001);
+run;
+
+proc freq data=sleep_nomissing;
+table bmi smo dri r_sit;
+run; 
+proc univariate data=sleep_nomissing;
+var tdi;
+run;
+
+proc phreg data=sleep_nomissing;   /*综合运动三分类*/
+class r_all(ref='2') ;
+model t_dep *dep(0)=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+proc phreg data=sleep_nomissing;   /*是否达标*/
+class r_0(ref='2') ;
+model t_dep *dep(0)=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit /risklimits;
+run;
+
+proc freq data=sleep_nomissing; 
+table (r_all r_0)* dep ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sleep_nomissing sum;  /*分类求人年*/
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sleep_nomissing sum;  /*分类求人年*/
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+
+/*4.敏感性分析--补充调整睡眠质量等因素*/
+
+data covar4;   /*covariates*/
+set aa.labelled_sjeeno;
+
+
+/*睡眠原始变量*/
+if n_1180_0_0 in (-1, -3) then stype=.;                         /*生物钟类型,1-早，2早>晚，3-晚>早，4-晚*/
+else stype=n_1180_0_0;
+
+if n_1190_0_0 in (-1, -3) then snap=.;                           /*午睡，1-从不，2-有时，3-通常*/
+else snap=n_1190_0_0;
+
+if n_1200_0_0= -3 then sless=.;                                  /*失眠，1-从不，2-有时，3-通常*/
+else sless=n_1200_0_0;
+
+if n_1210_0_0 in (-1, -3) then snore=.;                        /*打鼾，1-是，2-否*/
+else snore=n_1210_0_0;
+
+if n_1220_0_0 in (-1, -3) then sdoze=.;                        /*白天嗜睡，0-从不，1-有时，2-通常，3-总是*/
+else sdoze=n_1220_0_0;
+
+if stype=2 then stype=1; /*生物钟，1-morning，3-evening*/
+if stype=4 then stype=3;
+if snap=3 then snap=2; /*午睡，1-never，2-ever*/
+if sless=3 the sless=2; /*失眠，1-never，2-ever*/
+if sdoze=0 then sdoze=1; /*白天嗜睡，1-never,2-often*/
+if sdoze=3 then sdoze=2;
+
+keep  n_eid stype snap sless snore sdoze;
+run;
+
+proc freq data=covar4; 
+table stype snap sless snore sdoze ; /*table后接变量，对sex和age分别做描述*/
+run;
+
+
+data sum4_s4;
+merge sum4 covar4;
+by n_eid;
+if age=. or stype=. or snap=. or sless=. or snore=. or sdoze=. then delete;
+run;
+
+
+proc phreg data=sum4_s4;   /*综合运动三分类*/
+class r_all(ref='4') ;
+model t_dep *dep(0)=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit stype snap sless snore sdoze /risklimits;
+run;
+proc phreg data=sum4_s4;   /*是否达标*/
+class r_0(ref='3') ;
+model t_dep *dep(0)=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit stype snap sless snore sdoze /risklimits;
+run;
+
+proc freq data=sum4_s4; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_s4; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc means data=sum4_s4 sum;
+   class r_all;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+proc means data=sum4_s4 sum;
+   class r_0;
+   var t_dep;
+   output out=summary(drop=_TYPE_ _FREQ_) sum=total_person_years;
+run;
+
+
+
+/*5.敏感性分析--补充PHQ-2定义抑郁结局*/
+
+
+data out5;   /*covariates*/
+set aa.labelled_sjeeno;
+
+
+if n_2050_1_0 in (-1, -3) then phq1_1=.;    /*PHQ-2第一个问题随访三次*/               
+else phq1_1=n_2050_1_0;
+if n_2050_2_0 in (-1, -3) then phq1_2=.;                    
+else phq1_2=n_2050_2_0;
+if n_2050_3_0 in (-1, -3) then phq1_3=.;                    
+else phq1_3=n_2050_3_0;
+
+if n_2060_1_0 in (-1, -3) then phq2_1=.;    /*PHQ-2第二个问题随访三次*/           
+else phq2_1=n_2060_1_0;
+if n_2060_2_0 in (-1, -3) then phq2_2=.;                    
+else phq2_2=n_2060_2_0;
+if n_2060_3_0 in (-1, -3) then phq2_3=.;                    
+else phq2_3=n_2060_3_0;
+
+phq1_1=phq1_1-1;
+phq1_2=phq1_2-1;
+phq1_3=phq1_3-1;
+phq2_1=phq2_1-1;
+phq2_2=phq2_2-1;
+phq2_3=phq2_3-1;
+
+if phq1_1^=. and phq2_1^=. then s1=phq1_1 + phq2_1;
+if phq1_2^=. and phq2_2^=. then s2=phq1_2 + phq2_2;
+if phq1_3^=. and phq2_3^=. then s3=phq1_3 + phq2_3;
+
+if s1>=3 then dep1=1;
+if 0=<s1<3 then dep1=0;
+if s2>=3 then dep2=1;
+if 0=<s2<3 then dep2=0;
+if s3>=3 then dep3=1;
+if 0=<s3<3 then dep3=0;
+
+if dep1=. and dep2=. and dep3=. then delete;
+
+keep  n_eid phq1_1 phq1_2 phq1_3 phq2_1 phq2_2 phq2_3 s1 s2 s3 dep1 dep2 dep3;
+run;
+
+proc freq data=out5; 
+table phq1_1 phq1_2 phq1_3 phq2_1 phq2_2 phq2_3 s1 s2 s3 dep1 dep2 dep3; /*table后接变量，对sex和age分别做描述*/
+run;
+
+
+data sum4_s5;
+merge sum4 out5;
+by n_eid;
+if dep1=1 then dep=1;
+if dep2=1 then dep=1;
+if dep3=1 then dep=1;
+
+if age=. then delete;
+run;
+
+
+/*二分类logistic回归程序*/
+proc logistic data=sum4_s5; /*调用logistic程序，y为因变量，x为自变量*/
+class r_all (param = reference ref = '4'); /*对group3变量以第1组为参考进行回归*/
+model dep(ref='0')=r_all age sex eth edu tdi bmi smo dri diet base_dise r_sit /lackfit rsquare; /*二分类logistic回归*/
+run;
+
+proc logistic data=sum4_s5; /*调用logistic程序，y为因变量，x为自变量*/
+class r_0 (param = reference ref = '3'); /*对group3变量以第1组为参考进行回归*/
+model dep(ref='0')=r_0 age sex eth edu tdi bmi smo dri diet base_dise r_sit /lackfit rsquare; /*二分类logistic回归*/
+run;
+
+proc freq data=sum4_s5; 
+table dep*r_all ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
+proc freq data=sum4_s5; 
+table dep*r_0 ; /*计算dep在不同组中的分布情况，即 cases/n 信息*/
+run;
